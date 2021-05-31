@@ -1,0 +1,106 @@
+%% Analysis and figure generation code for "Modelling the efficacy of febrile heating in infected endotherms" submission%%
+
+%%(For Matlab R2020a)
+
+%% Figure 1 Code
+
+x = 7:0.01:48;
+y = (x-7).*(1-exp(0.16*(x-48)));
+z = y.^2;
+plot(x,z);
+title('S. Aureus temperature dependent growth');
+xlabel('Temperature (Celsius)');
+ylabel('r');
+axis([0 50 0 650]);
+set(gca,'YTick',[]);
+
+%% Figure 2 code
+
+x = 10:0.01:45;
+y = (x-10).*(1-exp(0.26*(x-45)));
+z = y.^2/558.23;
+plot(x,z);
+
+hold on
+x1 = 4:0.01:40;
+y1 = (x1-4).*(1-exp(1.247*(x1-40)));
+z1 = y1.^2/1037.929;
+plot(x1,z1);
+
+hold off
+
+title('Temperature-dependent growth');
+xlabel('Temperature (Celsius)');
+ylabel('r');
+axis([0 50 0 1]);
+set(gca,'YTick',[]);
+legend({'E. coli', 'S. dysenteriae'}, 'Location', 'northwest')
+
+%% Figure 3 code
+
+x = 37:0.01:44;
+y = (x-10).*(1-exp(0.26*(x-45)));
+z = y.^2;
+a = (x-9).*(1-exp(0.26*(x-44)))
+b = a.^2;
+c = b./z
+
+plot(x,c);
+
+hold on
+
+x1 = 37:0.01:43;
+y1 = (x1-10).*(1-exp(0.26*(x1-45)));
+z1 = y1.^2;
+a1 = (x1-8).*(1-exp(0.26*(x1-43)))
+b1 = a1.^2;
+c1 = b1./z1
+
+plot(x1,c1);
+
+x2 = 37:0.01:42;
+y2 = (x2-10).*(1-exp(0.26*(x2-45)));
+z2 = y2.^2;
+a2 = (x2-7).*(1-exp(0.26*(x2-42)))
+b2 = a2.^2;
+c2 = b2./z2
+
+plot(x2,c2);
+
+hold off
+
+title('Relative growth at T + x versus T');
+xlabel('Body temperature (Celsius)');
+ylabel('Relative Growth');
+legend({'+1 degree fever', '+2 degrees fever', '+3 degrees fever'}, 'Location', 'southwest')
+
+%% Figure 4 code
+
+x = 10:0.01:45;
+y = (x-10).*(1-exp(0.26*(x-45)));
+z = y.^2/558.23;
+plot(x,z);
+
+hold on
+
+y2 = (0.15*(45-x).*exp((-0.15*(45-x))))*exp(1)
+
+plot (x, y2)
+
+hold off
+
+xlabel('Temperature (Celsius)');
+ylabel('Relative Growth');
+legend({'E coli', 'Transformed Gamma(2,1)'}, 'Location', 'northwest')
+
+%% Figure 5
+
+x = 0:0.1:10;
+y = (exp(x)-1).*(exp((exp(x).*x)./(1-exp(x)))).*(exp(1)./x);
+
+plot(x,y);
+
+title('Optimal growth for a temperature range');
+xlabel('Temperature range width (arbitrary units)');
+ylabel('Optimal growth for temperature range');
+axis([0 10 0 1]);
