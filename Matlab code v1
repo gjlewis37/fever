@@ -2,20 +2,19 @@
 
 %%(For Matlab R2020a)
 
-%% Figure 1 Code
-
+%%Figure 1 Code
 x = 7:0.01:48;
 y = (x-7).*(1-exp(0.16*(x-48)));
 z = y.^2;
 plot(x,z);
 title('S. Aureus temperature dependent growth');
 xlabel('Temperature (Celsius)');
-ylabel('r');
+ylabel('Growth rate');
 axis([0 50 0 650]);
 set(gca,'YTick',[]);
 
-%% Figure 2 code
 
+%%Figure 2 code
 x = 10:0.01:45;
 y = (x-10).*(1-exp(0.26*(x-45)));
 z = y.^2/558.23;
@@ -31,13 +30,13 @@ hold off
 
 title('Temperature-dependent growth');
 xlabel('Temperature (Celsius)');
-ylabel('r');
+ylabel('Growth rate');
 axis([0 50 0 1]);
 set(gca,'YTick',[]);
 legend({'E. coli', 'S. dysenteriae'}, 'Location', 'northwest')
 
-%% Figure 3 code
 
+%%Figure 3 code
 x = 37:0.01:44;
 y = (x-10).*(1-exp(0.26*(x-45)));
 z = y.^2;
@@ -74,8 +73,8 @@ xlabel('Body temperature (Celsius)');
 ylabel('Relative Growth');
 legend({'+1 degree fever', '+2 degrees fever', '+3 degrees fever'}, 'Location', 'southwest')
 
-%% Figure 4 code
 
+%%Figure 4 code
 x = 10:0.01:45;
 y = (x-10).*(1-exp(0.26*(x-45)));
 z = y.^2/558.23;
@@ -93,8 +92,8 @@ xlabel('Temperature (Celsius)');
 ylabel('Relative Growth');
 legend({'E coli', 'Transformed Gamma(2,1)'}, 'Location', 'northwest')
 
-%% Figure 5
 
+%% Figure 5
 x = 0:0.1:10;
 y = (exp(x)-1).*(exp((exp(x).*x)./(1-exp(x)))).*(exp(1)./x);
 
@@ -104,3 +103,135 @@ title('Optimal growth for a temperature range');
 xlabel('Temperature range width (arbitrary units)');
 ylabel('Optimal growth for temperature range');
 axis([0 10 0 1]);
+
+
+%%Temperature/burst heating analysis
+%%Suppose 1 kg of water ('pseudobody') maintained at 37 degrees whilst the
+%%environment is at 25 degrees
+
+% Pre-amble: how much heat is needed for maintenence?
+
+% All of these numbers are fairly arbitrary, althrough roughly benchmarked
+% to human BMR etc.
+
+h = 10; %heat transfer coefficient
+A = 1; %surface area
+Te = 25; %environmental temperature
+T0 = 37; % Actual temperature
+Ql = h*A*(T0 - Te);
+
+%Unit test - make sure temperature static when 'in=out'
+
+shc = 4200; %specific heat capacity water
+m = 1; %mass of object
+
+syms T(t);
+ode = diff(T(t),t) == (Ql -(h*A*(T(t) - Te)))/(m*shc);
+cond = T(0) == 37; %initial condition
+NSol(t) = dsolve (ode, cond);
+
+ezplot(NSol,[0,3000]);
+
+%Unit test 2 - check model equilibrates at different temperatures
+
+syms T(t);
+ode = diff(T(t),t) == (200 -(h*A*(T(t) - Te)))/(m*shc);
+cond = T(0) == 37; %initial condition
+NSol(t) = dsolve (ode, cond);
+
+ezplot(NSol,[0,3000]);
+
+%% cooling from 40
+
+syms T(t);
+ode = diff(T(t),t) == (Ql -(h*A*(T(t) - Te)))/(m*shc);
+cond = T(0) == 40; %initial condition
+NSol(t) = dsolve (ode, cond);
+
+ezplot(NSol,[0,3000]);
+
+%Finding cut off values
+
+t1 = -log(0.1/3)*420  
+
+t2 = -log(0.01/3)*420
+
+t3 = -log(0.5/3)*420 
+
+%Corresponding temps with sustained heating for each cut-off value
+
+T1 = (120 + 12600/1430)/10 + 25 
+
+T2 = (120 + 12600/2400)/10 + 25 
+
+T3 = (120 + 12600/750)/10 + 25 
+
+%Burst heating
+
+%% cooling from 40 - S. dys
+
+syms T(t);
+ode = diff(T(t),t) == (Ql -(h*A*(T(t) - Te)))/(m*shc);
+cond = T(0) == 40; %initial condition
+NSol(t) = dsolve (ode, cond);
+
+syms U(T)
+U(T) = 1 - ((((T-4)*(1-exp(1.247*(T-40))))^2)/1037.929)
+
+ezplot (U(T), [4, 40])
+
+Uf = U(NSol(t))
+
+ezplot(NSol,[0,3000]);
+
+ezplot(Uf, [0,3000]);
+
+func = matlabFunction(Uf);
+
+totalI = integral(func, 0, 1430)
+
+totalI2 = integral(func, 0, 2400)
+
+totalI3 = integral(func, 0, 750)
+
+% Constant heating
+
+bs37 = (1 - ((((37.88-4)*(1-exp(1.247*(37.88-40))))^2)/1037.929))*1430
+
+bs372 = (1 - ((((37.53-4)*(1-exp(1.247*(37.53-40))))^2)/1037.929))*2400
+
+bs373 = (1 - ((((38.68-4)*(1-exp(1.247*(38.68-40))))^2)/1037.929))*750
+
+
+%% cooling from 40 - E. Coli
+
+syms T(t);
+ode = diff(T(t),t) == (Ql -(h*A*(T(t) - Te)))/(m*shc);
+cond = T(0) == 40; %initial condition
+NSol(t) = dsolve (ode, cond);
+
+syms U(T)
+U(T) = 1 - ((((T-10)*(1-exp(0.260*(T-45))))^2)/558.23)
+
+ezplot (U(T), [10, 45])
+
+Uf = U(NSol(t))
+
+ezplot(NSol,[0,3000]);
+
+ezplot(Uf, [0,3000]);
+
+func = matlabFunction(Uf);
+
+totalI = integral(func, 0, 1430)
+
+totalI2 = integral(func, 0, 2400)
+
+totalI3 = integral(func, 0, 750)
+
+s37a = (1 - ((((37.88-10)*(1-exp(0.260*(37.88-45))))^2)/558.23))*1430
+
+s37a2 = (1 - ((((37.52-10)*(1-exp(0.260*(37.52-45))))^2)/558.23))*2400
+
+s37a3 = (1 - ((((38.68-10)*(1-exp(0.260*(38.68-45))))^2)/558.23))*750
+
